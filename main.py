@@ -54,36 +54,58 @@ def score(seq, profiles):
         var += 1
     return score
 
+#
+# def make_all_possible(seq, length, profiles):
+#     score_last, seq_last = 0, ''
+#     res = [seq[i: j] for i in range(len(seq))
+#            for j in range(i + 1, len(seq) + 1)]
+#
+#     for sequence in res:
+#         if len(sequence) <= length:
+#             # seqs_without_gap.append(sequence)
+#             seqs = add_gap(sequence, length)
+#             best_seq, max_score = find_max_similarity(seqs, profiles)
+#             if max_score > score_last:
+#                 seq_last = best_seq
+#                 score_last = max_score
+#     return seq_last, score_last
 
-def make_all_possible(seq, length):
-    seqs_without_gap = []
 
-    res = [seq[i: j] for i in range(len(seq))
-           for j in range(i + 1, len(seq) + 1)]
-
-    for sequence in res:
-        if len(sequence) <= length:
-            
-            seqs_without_gap.append(sequence)
-    return seqs_without_gap
-
-
-def add_gap(seqs, length):
+def add_gap(sequence, length):
     new_seqs = []
     gap = '-'
-    for sequence in seqs:
-        gap = '-'
-        for k in range(length - len(sequence) - 1):
-            gap += '-'
-        seq_gap = sequence
-        if len(sequence) != length:
-            seq_gap = sequence + gap
-        sth = set(permutations(seq_gap))
-        for shit in sth:
-            shitty = convert_to_string(shit)
-            if check_without_gap(shitty, sequence):
-                new_seqs.append(shitty)
+    # for sequence in seqs:
+    gap = '-'
+    for k in range(length - len(sequence) - 1):
+        gap += '-'
+    seq_gap = sequence
+    if len(sequence) != length:
+        seq_gap = sequence + gap
+    sth = set(permutations(seq_gap))
+    for shit in sth:
+        shitty = convert_to_string(shit)
+        if check_without_gap(shitty, sequence):
+            new_seqs.append(shitty)
     return new_seqs
+
+
+def check_all_sequences(profiles, big_seq, length):  # new function !!!!!!!!
+    sequence = ''
+    dictionary_checked = {}
+    score_last, seq_last = 0, ''
+    for i in range(len(big_seq)):
+        sequence = ''
+        for j in range(i, i+length):
+            if j < len(big_seq):
+                sequence += big_seq[j]
+                if sequence not in dictionary_checked:
+                    dictionary_checked[sequence] = True
+                    new_seqs = add_gap(sequence, length)
+                    best_seq, max_score = find_max_similarity(new_seqs, profiles)
+                    if max_score > score_last:
+                        seq_last = best_seq
+                        score_last = max_score
+    return seq_last, score_last
 
 
 def convert_to_string(seq):
@@ -114,7 +136,7 @@ def find_max_similarity(seqs, profiles):
             max_score = score_seq
             best_seq = sequence
     # print(max_score, best_seq)
-    return best_seq
+    return best_seq, max_score
 
 
 if __name__ == '__main__':
@@ -127,9 +149,7 @@ if __name__ == '__main__':
     last_seq = input()
     amino_acids = get_amino_acids(whole_seqs)
     profile = make_profiles(sequences, amino_acids)
-    all_seq = make_all_possible(last_seq, len(sequences[0]))
-    # print(all_seq)
-    all_sequences = add_gap(all_seq, len(sequences[0]))
-    # print(all_sequences)
-    answer = find_max_similarity(all_sequences, profile)
-    print(answer)
+    # best, score_best = make_all_possible(last_seq, len(sequences[0]), profile)
+    best, best_score = check_all_sequences(profile, last_seq, len(sequences[0]))
+    print(best)
+
